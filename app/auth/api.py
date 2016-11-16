@@ -1,30 +1,12 @@
 from flask import render_template, Blueprint, request
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
+from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from werkzeug.security import generate_password_hash, \
      check_password_hash
 from .form import LoginForm
-
-
-auth = Blueprint('auth', __name__, template_folder='templates')
-
-db = SQLAlchemy()
-login_manager = LoginManager()
-
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, unique=True, primary_key=True)
-    username = db.Column(db.String(80), unique=True)
-    password = db.Column(db.String(255))
-
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
-
-    def __repr__(self):
-        return "%s/%s" % (self.username, self.password)
-
-    # def get_id(self):
-    #     return self.username
+from app import db
+from app.models import User
+from . import auth, login_manager
 
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():

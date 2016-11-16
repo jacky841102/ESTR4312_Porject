@@ -11,7 +11,7 @@
 </div>
 {% endmacro %}
 Register
-<form method="POST" action="/signup" accept-charset="UTF-8" role="form">
+<form method="POST" action="/auth/signup" accept-charset="UTF-8" role="form">
   {{ form.csrf_token }}
   {{ render_field(form.username, placeholder="Username", autofocus="") }}
   {{ render_field(form.password, placeholder="Password") }}

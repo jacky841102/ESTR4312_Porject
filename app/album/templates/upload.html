@@ -1,0 +1,6 @@
+Upload
+<form method="POST" action="/album/upload" enctype="multipart/form-data">
+  {{ form.csrf_token }}
+  {{form.photo.label}}{{form.photo()}}
+  <input type="submit" value="Upload Image" name="submit">
+</form>
