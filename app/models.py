@@ -24,4 +24,4 @@ class Photo(db.Model, UserMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship("User")
 
-    __tablename__ = 'album'
+    __tablename__ = 'photos'

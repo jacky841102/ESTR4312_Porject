@@ -9,23 +9,18 @@ import os
 
 @album.route('/')
 @login_required
-def list(id=0):
-    if not id:
-        id = current_user.id
-    user = User.query.get(id)
-    if user and current_user.id == id:
-        urls = [p.url for p in user.album]
-        return jsonify(urls=urls)
-    return 'noop'
+def list():
+    user = User.query.get(current_user.id)
+    urls = [p.url for p in user.album]
+    return jsonify(urls=urls)
 
 @album.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
-    id = current_user.id
-    user = User.query.get(id)
+    user = User.query.get(current_user.id)
     form = UploadForm()
     if request.method == 'POST':
-        if user and form.validate_on_submit():
+        if form.validate_on_submit():
             file = form.photo.data
             if file:
                 filename = secure_filename(file.filename)
@@ -33,7 +28,6 @@ def upload():
                 url = url_for('album.uploaded_file', filename=filename)
                 photo = Photo(url=url)
                 user.album.append(photo)
-                db.session.add(photo)
                 db.session.commit()
                 return redirect(url)
     return render_template('upload.html', form=form)
@@ -42,3 +36,14 @@ def upload():
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
+
+@album.route('/delete')
+@login_required
+def delete():
+    photo_id = request.args.get('photo_id')
+    user = User.query.get(current_user.id)
+    photo = Photo.query.get(photo_id)
+    if photo:
+        db.session.delete(photo)
+        db.session.commit()
+        return "delete succefully"
