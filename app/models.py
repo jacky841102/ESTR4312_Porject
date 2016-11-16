@@ -22,6 +22,16 @@ class Photo(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String(255), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship("User")
+    user = db.relationship('User')
+    tags = db.relationship('Tag', cascade='all, delete, delete-orphan')
 
     __tablename__ = 'photos'
+
+class Tag(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    photo_id = db.Column(db.Integer, db.ForeignKey('photos.id'))
+    attr = db.Column(db.String(20))
+
+    photo = db.relationship('Photo')
+
+    __tablename__ = "tags"

@@ -1,6 +1,6 @@
 from flask import render_template, Blueprint, request, send_from_directory, url_for, redirect, jsonify
 from flask_login import login_required, current_user
-from app.models import User, Photo
+from app.models import User, Photo, Tag
 from app import db, app
 from . import album
 from werkzeug.utils import secure_filename
@@ -27,6 +27,10 @@ def upload():
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 url = url_for('album.uploaded_file', filename=filename)
                 photo = Photo(url=url)
+
+                for tag in form.tags.data.split():
+                    photo.tags.append(Tag(attr=tag))
+
                 user.album.append(photo)
                 db.session.commit()
                 return redirect(url)
