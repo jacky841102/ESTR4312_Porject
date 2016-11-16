@@ -12,3 +12,9 @@ from wtforms import validators
 class UploadForm(FlaskForm):
     photo = FileField(u'Image File')
     tags = StringField(u'Tags')
+
+class SearchForm(FlaskForm):
+    tag = StringField(u'Tag')
+
+class DeleteForm(FlaskForm):
+    photo_id = StringField(u'Photo id')

@@ -4,7 +4,7 @@ from app.models import User, Photo, Tag
 from app import db, app
 from . import album
 from werkzeug.utils import secure_filename
-from .form import UploadForm
+from .form import UploadForm, SearchForm, DeleteForm
 import os
 
 @album.route('/')
@@ -12,7 +12,7 @@ import os
 def list():
     user = User.query.get(current_user.id)
     urls = [p.url for p in user.album]
-    return jsonify(urls=urls)
+    return render_template('list.jinja2', urls=urls)
 
 @album.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -41,13 +41,29 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
 
-@album.route('/delete')
+@album.route('/delete', methods=['GET', 'POST'])
 @login_required
 def delete():
-    photo_id = request.args.get('photo_id')
-    user = User.query.get(current_user.id)
-    photo = Photo.query.get(photo_id)
-    if photo:
-        db.session.delete(photo)
-        db.session.commit()
-        return "delete succefully"
+    form = DeleteForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            photo_id = int(form.photo_id.data)
+            photo = Photo.query.get(photo_id)
+            db.session.delete(photo)
+            db.session.commit()
+            return 'delete succesfully'
+    return render_template('delete.html', form=form)
+
+@album.route('/search', methods=['GET', 'POST'])
+@login_required
+def search():
+    form = SearchForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            attr = form.tag.data
+            urls = []
+            if attr:
+                for tag in Tag.query.filter_by(attr=attr).all():
+                    urls.append(tag.photo.url)
+            return jsonify(urls=urls)
+    return render_template('search.html', form=form)

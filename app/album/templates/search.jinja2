@@ -1,0 +1,6 @@
+Search
+<form method="POST" action="/album/search">
+  {{ form.csrf_token }}
+  {{form.tag.label}}{{form.tag()}}
+  <input type="submit" value="Search Image" name="search">
+</form>
