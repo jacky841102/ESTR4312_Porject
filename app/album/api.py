@@ -34,7 +34,7 @@ def upload():
                 user.album.append(photo)
                 db.session.commit()
                 return redirect(url)
-    return render_template('upload.html', form=form)
+    return render_template('upload.jinja2', form=form)
 
 @album.route('/<filename>')
 def uploaded_file(filename):
@@ -52,7 +52,7 @@ def delete():
             db.session.delete(photo)
             db.session.commit()
             return 'delete succesfully'
-    return render_template('delete.html', form=form)
+    return render_template('delete.jinja2', form=form)
 
 @album.route('/search', methods=['GET', 'POST'])
 @login_required
@@ -66,4 +66,4 @@ def search():
                 for tag in Tag.query.filter_by(attr=attr).all():
                     urls.append(tag.photo.url)
             return jsonify(urls=urls)
-    return render_template('search.html', form=form)
+    return render_template('search.jinja2', form=form)

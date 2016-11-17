@@ -15,9 +15,11 @@ db = SQLAlchemy(app)
 
 from .auth import auth, login_manager
 from .album import album
+from .effect import effect
 
 app.register_blueprint(auth)
 app.register_blueprint(album)
+app.register_blueprint(effect)
 
 login_manager.init_app(app)
 
