@@ -1,5 +1,15 @@
 <ul>
-{% for url in urls %}
-<li><img src="{{url}}"/></li>
+{% for photo in photos %}
+<li>
+    <span>
+        <a href={{photo.url}}>
+            <img src="{{photo.tn_url}}"/>
+        </a>
+    </span>
+    <span style="display:inline-block; width: 10px;"></span>
+    {% for tag in photo.tags %}
+        {{tag.attr}}
+    {% endfor %}
+</li>
 {% endfor %}
 </ul>

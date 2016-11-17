@@ -32,6 +32,8 @@ def poissonBlending(foreImgName, backImgName, maskName, writeName, user_id):
     cv2.imwrite(writePath, result)
 
     photo_id = addToDB(writeName, 'blending', user_id)
+    createTumbnail.delay(writeName, photo_id)
+
     autoTag.delay(writePath, photo_id)
 
     os.remove(foreImgPath)
@@ -49,6 +51,8 @@ def gaussianBlur(imgName, writeName, user_id):
     cv2.imwrite(writePath, result)
 
     photo_id = addToDB(writeName, 'blur', user_id)
+    createTumbnail.delay(writeName, photo_id)
+
     autoTag.delay(writePath, photo_id)
 
     os.remove(imgPath)
@@ -64,6 +68,8 @@ def laplacian(imgName, writeName, user_id):
     cv2.imwrite(writePath, result)
 
     photo_id = addToDB(writeName, 'edge', user_id)
+    createTumbnail.delay(writeName, photo_id)
+
     autoTag.delay(writePath, photo_id)
 
     os.remove(imgPath)
@@ -87,6 +93,7 @@ def hdr(imgNames, exposures, writeName, user_id):
 
     cv2.imwrite(writePath, res * 255)
     photo_id = addToDB(writeName, 'HDR', user_id)
+    createTumbnail.delay(writeName, photo_id)
 
     autoTag.delay(writePath, photo_id)
 
@@ -115,7 +122,33 @@ def autoTag(imgPath, photo_id):
 
     db.session.commit()
 
+@worker.task
+def createTumbnail(imgName, photo_id):
+    tnName = 'tn-' + imgName
 
+    imgPath = os.path.join(app.config['UPLOAD_FOLDER'], imgName)
+    tnPath = os.path.join(app.config['UPLOAD_FOLDER'], tnName)
+
+    img = cv2.imread(imgPath)
+
+    H, W, _ = img.shape
+
+    if H > W:
+        W = int(float(W) / H * 128)
+        H = 128
+    else:
+        H = int(float(H) / W * 128)
+        W = 128
+
+    tn = cv2.resize(img, (W, H))
+
+    cv2.imwrite(tnPath, tn)
+
+    with app.app_context():
+        url = url_for('album.uploaded_file', filename=tnName)
+        photo = Photo.query.get(photo_id)
+        photo.tn_url = url
+        db.session.commit()
 
 def solveEulerLagrange(foreImg, backImg, mask):
 
@@ -169,7 +202,7 @@ def addToDB(writeName, attr, user_id):
     with app.app_context():
         url = url_for('album.uploaded_file', filename=writeName)
         user = User.query.get(user_id)
-        photo = Photo(url=url)
+        photo = Photo(url=url, tn_url=url)
         user.album.append(photo)
         photo.tags.append(Tag(attr=attr))
         db.session.commit()

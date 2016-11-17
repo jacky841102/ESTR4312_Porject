@@ -5,7 +5,7 @@ from app import db, app
 from . import album
 from werkzeug.utils import secure_filename
 from .form import UploadForm, SearchForm, DeleteForm
-from app.worker import autoTag
+from app.worker import autoTag, createTumbnail
 from uuid import uuid4
 import os
 
@@ -13,8 +13,7 @@ import os
 @login_required
 def list():
     user = User.query.get(current_user.id)
-    urls = [p.url for p in user.album]
-    return render_template('list.jinja2', urls=urls)
+    return render_template('list.jinja2', photos=user.album)
 
 @album.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -31,7 +30,7 @@ def upload():
 
                 with app.app_context():
                     url = url_for('album.uploaded_file', filename=filename, _external=True)
-                    photo = Photo(url=url)
+                    photo = Photo(url=url, tn_url=url)
 
                     for tag in form.tags.data.split():
                         photo.tags.append(Tag(attr=tag))
@@ -39,6 +38,7 @@ def upload():
                     user.album.append(photo)
                     db.session.commit()
 
+                    createTumbnail.delay(filename, photo.id)
                     autoTag.delay(imgPath, photo.id)
 
                     return redirect(url)
@@ -69,9 +69,9 @@ def search():
     if request.method == 'POST':
         if form.validate_on_submit():
             attr = form.tag.data
-            urls = []
+            photos = []
             if attr:
                 for tag in Tag.query.filter_by(attr=attr).all():
-                    urls.append(tag.photo.url)
-            return jsonify(urls=urls)
+                    photos.append(tag.photo)
+            return render_template('list.jinja2', photos=photos)
     return render_template('search.jinja2', form=form)
