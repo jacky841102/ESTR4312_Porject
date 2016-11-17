@@ -8,6 +8,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@localhost
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.secret_key = 'super secret key'
 
+
+app.config['SERVER_NAME'] = 'localhost:8080'
 app.config['UPLOAD_FOLDER'] = '/tmp/images'
 app.config['ALLOWED_EXTENSIONS'] = set(['png', 'jpg', 'jpeg'])
 

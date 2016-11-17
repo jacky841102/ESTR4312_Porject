@@ -5,6 +5,8 @@ from app import db, app
 from . import album
 from werkzeug.utils import secure_filename
 from .form import UploadForm, SearchForm, DeleteForm
+from app.worker import autoTag
+from uuid import uuid4
 import os
 
 @album.route('/')
@@ -23,17 +25,23 @@ def upload():
         if form.validate_on_submit():
             file = form.photo.data
             if file:
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                url = url_for('album.uploaded_file', filename=filename)
-                photo = Photo(url=url)
+                filename = uuid4().hex + '.jpg'
+                imgPath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(imgPath)
 
-                for tag in form.tags.data.split():
-                    photo.tags.append(Tag(attr=tag))
+                with app.app_context():
+                    url = url_for('album.uploaded_file', filename=filename, _external=True)
+                    photo = Photo(url=url)
 
-                user.album.append(photo)
-                db.session.commit()
-                return redirect(url)
+                    for tag in form.tags.data.split():
+                        photo.tags.append(Tag(attr=tag))
+
+                    user.album.append(photo)
+                    db.session.commit()
+
+                    autoTag.delay(imgPath, photo.id)
+
+                    return redirect(url)
     return render_template('upload.jinja2', form=form)
 
 @album.route('/<filename>')

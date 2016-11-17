@@ -1,4 +1,4 @@
-from flask import request, render_template
+from flask import request, render_template, redirect, url_for
 from flask_login import login_required, current_user
 from . import effect
 from app.worker import *
@@ -14,21 +14,21 @@ def blending():
     if request.method == 'POST':
         if form.validate_on_submit():
             foreImg, backImg, mask = form.foreImg.data, form.backImg.data, form.mask.data
-            foreImgName, backImgName, maskName, writeName = uuid4().hex, uuid4().hex, uuid4().hex, uuid4().hex
+            foreImgName, backImgName, maskName, writeName = uniqueName(), uniqueName(), uniqueName(), uniqueName()
 
-            foreImgPath = os.path.join(app.config['UPLOAD_FOLDER'], foreImgName + '.jpg')
-            backImgPath = os.path.join(app.config['UPLOAD_FOLDER'], backImgName + '.jpg')
-            maskPath = os.path.join(app.config['UPLOAD_FOLDER'], maskName + '.jpg')
-            writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName + '.jpg')
+            foreImgPath = os.path.join(app.config['UPLOAD_FOLDER'], foreImgName)
+            backImgPath = os.path.join(app.config['UPLOAD_FOLDER'], backImgName)
+            maskPath = os.path.join(app.config['UPLOAD_FOLDER'], maskName)
+            writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName)
 
             foreImg.save(foreImgPath)
             backImg.save(backImgPath)
             mask.save(maskPath)
 
-            task_id = poissonBlending.delay(foreImgPath,
-                                            backImgPath,
-                                            maskPath,
-                                            writePath,
+            task_id = poissonBlending.delay(foreImgName,
+                                            backImgName,
+                                            maskName,
+                                            writeName,
                                             current_user.id).task_id
             return task_id
     return render_template('blending.jinja2', form=form)
@@ -40,18 +40,17 @@ def blur():
     if request.method == 'POST':
         if form.validate_on_submit():
             img = form.img.data
-            imgName, writeName = uuid4().hex, uuid4().hex
+            imgName, writeName = uniqueName(), uniqueName()
 
-            imgPath = os.path.join(app.config['UPLOAD_FOLDER'], imgName + '.jpg')
-            writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName + '.jpg')
+            imgPath = os.path.join(app.config['UPLOAD_FOLDER'], imgName)
+            writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName)
 
             img.save(imgPath)
 
-            task_id = gaussianBlur.delay(imgPath, writePath, current_user.id).task_id
+            task_id = gaussianBlur.delay(imgName, writeName, current_user.id).task_id
             return task_id
 
     return render_template('blur.jinja2', form=form)
-
 
 @effect.route('/edge', methods=['GET', 'POST'])
 @login_required
@@ -60,14 +59,14 @@ def edge():
     if request.method == 'POST':
         if form.validate_on_submit():
             img = form.img.data
-            imgName, writeName = uuid4().hex, uuid4().hex
+            imgName, writeName = uniqueName(), uniqueName()
 
-            imgPath = os.path.join(app.config['UPLOAD_FOLDER'], imgName + '.jpg')
-            writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName + '.jpg')
+            imgPath = os.path.join(app.config['UPLOAD_FOLDER'], imgName)
+            writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName)
 
             img.save(imgPath)
 
-            task_id = laplacian.delay(imgPath, writePath, current_user.id).task_id
+            task_id = laplacian.delay(imgName, writeName, current_user.id).task_id
 
             return task_id
     return render_template('edge.jinja2', form=form)
@@ -82,24 +81,30 @@ def HDR():
             img2 = form.img2.data
             img3 = form.img3.data
 
-            img1Name = uuid4().hex
-            img2Name = uuid4().hex
-            img3Name = uuid4().hex
-            writeName = uuid4().hex
+            img1Name = uniqueName()
+            img2Name = uniqueName()
+            img3Name = uniqueName()
+            writeName = uniqueName()
 
-            imgPaths = [os.path.join(app.config['UPLOAD_FOLDER'], img1Name + '.jpg'),
-                        os.path.join(app.config['UPLOAD_FOLDER'], img2Name + '.jpg'),
-                        os.path.join(app.config['UPLOAD_FOLDER'], img3Name + '.jpg')]
+            imgNames = [img1Name, img2Name, img3Name]
+
+            imgPaths = [os.path.join(app.config['UPLOAD_FOLDER'], img1Name),
+                        os.path.join(app.config['UPLOAD_FOLDER'], img2Name),
+                        os.path.join(app.config['UPLOAD_FOLDER'], img3Name)]
 
             exposures = [float(form.expo1.data), float(form.expo2.data), float(form.expo3.data)]
 
-            writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName + '.jpg')
+            writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName)
 
             img1.save(imgPaths[0])
             img2.save(imgPaths[1])
             img3.save(imgPaths[2])
 
-            task_id = hdr.delay(imgPaths, exposures, writePath, current_user.id).task_id
+            task_id = hdr.delay(imgNames, exposures, writeName, current_user.id).task_id
             return task_id
 
+
     return render_template('hdr.jinja2', form=form)
+
+def uniqueName():
+    return uuid4().hex + '.jpg'

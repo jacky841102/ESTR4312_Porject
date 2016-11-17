@@ -18,7 +18,7 @@ def signup():
             db.session.add(User(username, password))
             db.session.commit()
             return 'register successfully'
-        return render_template('signup.html', form=form)
+        return render_template('signup.jinja2', form=form)
     else:
         return 'hello %s' % current_user.username
 
@@ -31,7 +31,7 @@ def login():
             if user and check_password_hash(user.password, form.password.data):
                 login_user(user)
                 return 'login successfully'
-        return render_template('login.html', form=form)
+        return render_template('login.jinja2', form=form)
     else:
         return 'hello %s' % current_user.username
 

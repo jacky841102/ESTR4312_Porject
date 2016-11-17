@@ -4,40 +4,77 @@ import scipy
 from scipy.sparse import linalg
 from celery import Celery
 from io import BytesIO
-from app import db
+from app import db, app
 from app.models import User, Photo, Tag
+from flask import url_for
+import requests
+import os
 
 worker = Celery('tasks',
               broker='amqp://guest@localhost//',
               backend='redis://localhost')
 
+api_key = 'acc_bcaa852bcf36aeb'
+api_secret = '26070208e4010423b321281902c5dd4f'
+
 @worker.task
-def poissonBlending(foreImgPath, backImgPath, maskPath, writePath, user_id):
+def poissonBlending(foreImgName, backImgName, maskName, writeName, user_id):
+    foreImgPath = os.path.join(app.config['UPLOAD_FOLDER'], foreImgName)
+    backImgPath = os.path.join(app.config['UPLOAD_FOLDER'], backImgName)
+    maskPath = os.path.join(app.config['UPLOAD_FOLDER'], maskName)
+    writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName)
+
     foreImg = cv2.imread(foreImgPath)
     backImg = cv2.imread(backImgPath)
     maskImg = cv2.imread(maskPath)
+
     result = solveEulerLagrange(foreImg, backImg, maskImg)
     cv2.imwrite(writePath, result)
-    addToDB(writePath, 'blending', user_id)
+
+    photo_id = addToDB(writeName, 'blending', user_id)
+    autoTag.delay(writePath, photo_id)
+
+    os.remove(foreImgPath)
+    os.remove(backImgPath)
+    os.remove(maskPath)
 
 @worker.task
-def gaussianBlur(imgPath, writePath, user_id):
+def gaussianBlur(imgName, writeName, user_id):
+    imgPath = os.path.join(app.config['UPLOAD_FOLDER'], imgName)
+    writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName)
+
     img = cv2.imread(imgPath)
+
     result = cv2.GaussianBlur(img, (5,5), 0)
     cv2.imwrite(writePath, result)
-    addToDB(writePath, 'blur', user_id)
+
+    photo_id = addToDB(writeName, 'blur', user_id)
+    autoTag.delay(writePath, photo_id)
+
+    os.remove(imgPath)
 
 @worker.task
-def laplacian(imgPath, writePath, user_id):
+def laplacian(imgName, writeName, user_id):
+    imgPath = os.path.join(app.config['UPLOAD_FOLDER'], imgName)
+    writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName)
+
     img = cv2.imread(imgPath, 0)
+
     result = cv2.Laplacian(img, cv2.CV_64F)
     cv2.imwrite(writePath, result)
-    addToDB(writePath, 'edge', user_id)
+
+    photo_id = addToDB(writeName, 'edge', user_id)
+    autoTag.delay(writePath, photo_id)
+
+    os.remove(imgPath)
 
 @worker.task
-def hdr(imgPaths, exposures, writePath, user_id):
-    images = [cv2.imread(imgPath) for imgPath in imgPaths]
+def hdr(imgNames, exposures, writeName, user_id):
+    writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName)
 
+    imgPaths = [os.path.join(app.config['UPLOAD_FOLDER'], imgName) for imgName in imgNames]
+
+    images = [cv2.imread(imgPath) for imgPath in imgPaths]
     imgs = imageAlignment(images)
 
     merge_debvec = cv2.createMergeDebevec()
@@ -49,7 +86,36 @@ def hdr(imgPaths, exposures, writePath, user_id):
     res = tonemap.process(hdr_debvec)
 
     cv2.imwrite(writePath, res * 255)
-    addToDB(writePath, 'HDR', user_id)
+    photo_id = addToDB(writeName, 'HDR', user_id)
+
+    autoTag.delay(writePath, photo_id)
+
+    for path in imgPaths:
+        os.remove(path)
+
+@worker.task
+def autoTag(imgPath, photo_id):
+    content_res = requests.post('https://api.imagga.com/v1/content',
+            files={'image': open(imgPath, 'rb')}, auth=(api_key, api_secret))
+    content_id = content_res.json()['uploaded'][0]['id']
+
+    tag_res = requests.get('https://api.imagga.com/v1/tagging',
+            params={'content': content_id, 'limit': 5},
+            auth=(api_key, api_secret))
+
+    results = tag_res.json()['results']
+
+    photo = Photo.query.get(photo_id)
+
+    tags = results[0]['tags']
+
+    for tag in tags:
+        if float(tag['confidence']) >= 25:
+            photo.tags.append(Tag(attr=tag['tag']))
+
+    db.session.commit()
+
+
 
 def solveEulerLagrange(foreImg, backImg, mask):
 
@@ -99,12 +165,15 @@ def solveEulerLagrange(foreImg, backImg, mask):
         result[:,:,c] = img
     return result
 
-def addToDB(url, attr, user_id):
-    user = User.query.get(user_id)
-    photo = Photo(url=url)
-    user.album.append(photo)
-    photo.tags.append(Tag(attr=attr))
-    db.session.commit()
+def addToDB(writeName, attr, user_id):
+    with app.app_context():
+        url = url_for('album.uploaded_file', filename=writeName)
+        user = User.query.get(user_id)
+        photo = Photo(url=url)
+        user.album.append(photo)
+        photo.tags.append(Tag(attr=attr))
+        db.session.commit()
+        return photo.id
 
 def imageAlignment(images):
 
