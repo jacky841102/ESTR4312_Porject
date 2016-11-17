@@ -19,3 +19,11 @@ class BlurForm(FlaskForm):
 
 class EdgeForm(FlaskForm):
     img = FileField(u'Find image edge')
+
+class HDRForm(FlaskForm):
+    img1 = FileField(u'Image1')
+    expo1 = StringField(u'Exposure time 1')
+    img2 = FileField(u'Image2')
+    expo2 = StringField(u'Exposure time 2')
+    img3 = FileField(u'Image3')
+    expo3 = StringField(u'Exposure time 3')

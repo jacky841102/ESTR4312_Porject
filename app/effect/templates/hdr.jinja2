@@ -1,0 +1,8 @@
+HDR
+<form method="POST" action="/effect/hdr" enctype="multipart/form-data">
+  {{ form.csrf_token }}
+  <div>{{form.img1.label}}{{form.img1()}}{{form.expo1.label}}{{form.expo1()}}</div>
+  <div>{{form.img2.label}}{{form.img2()}}{{form.expo2.label}}{{form.expo2()}}</div>
+  <div>{{form.img3.label}}{{form.img3()}}{{form.expo3.label}}{{form.expo3()}}</div>
+  <input type="submit" value="HDR Image" name="submit">
+</form>
