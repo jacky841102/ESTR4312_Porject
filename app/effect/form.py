@@ -13,3 +13,9 @@ class BlendingForm(FlaskForm):
     foreImg = FileField(u'Foreground image')
     backImg = FileField(u'Background image')
     mask = FileField(u'Mask')
+
+class BlurForm(FlaskForm):
+    img = FileField(u'Blur image')
+
+class EdgeForm(FlaskForm):
+    img = FileField(u'Find image edge')

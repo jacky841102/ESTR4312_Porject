@@ -1,0 +1,6 @@
+Find edge
+<form method="POST" action="/effect/edge" enctype="multipart/form-data">
+  {{ form.csrf_token }}
+  {{form.img.label}}{{form.img()}}
+  <input type="submit" value="Find edge" name="submit">
+</form>

@@ -1,0 +1,6 @@
+Blur
+<form method="POST" action="/effect/blur" enctype="multipart/form-data">
+  {{ form.csrf_token }}
+  {{form.img.label}}{{form.img()}}
+  <input type="submit" value="Blur Image" name="submit">
+</form>

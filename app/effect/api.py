@@ -33,8 +33,41 @@ def blending():
             return task_id
     return render_template('blending.jinja2', form=form)
 
+@effect.route('/blur', methods=['GET', 'POST'])
+@login_required
+def blur():
+    form = BlurForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            img = form.img.data
+            imgName, writeName = uuid4().hex, uuid4().hex
+
+            imgPath = os.path.join(app.config['UPLOAD_FOLDER'], imgName + '.jpg')
+            writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName + '.jpg')
+
+            img.save(imgPath)
+
+            task_id = gaussianBlur.delay(imgPath, writePath, current_user.id).task_id
+            return task_id
+
+    return render_template('blur.jinja2', form=form)
+
+
 @effect.route('/edge', methods=['GET', 'POST'])
 @login_required
 def edge():
-    task_id = laplacianOfGaussian.delay('/tmp/images/blended.png', '/tmp/images/edge.png').task_id
-    return task_id
+    form = EdgeForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            img = form.img.data
+            imgName, writeName = uuid4().hex, uuid4().hex
+
+            imgPath = os.path.join(app.config['UPLOAD_FOLDER'], imgName + '.jpg')
+            writePath = os.path.join(app.config['UPLOAD_FOLDER'], writeName + '.jpg')
+
+            img.save(imgPath)
+
+            task_id = laplacian.delay(imgPath, writePath, current_user.id).task_id
+
+            return task_id
+    return render_template('edge.jinja2', form=form)

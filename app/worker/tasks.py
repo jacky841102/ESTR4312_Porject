@@ -29,11 +29,11 @@ def gaussianBlur(imgPath, writePath, user_id):
 
 
 @worker.task
-def laplacianOfGaussian(imgPath, writePath, user_id):
-    img = cv2.imread(imgPath)
-    result = cv2.Laplacian(cv2.GaussianBlur(img, (3,3), 0), cv2.CV_64F)
+def laplacian(imgPath, writePath, user_id):
+    img = cv2.imread(imgPath, 0)
+    result = cv2.Laplacian(img, cv2.CV_64F)
     cv2.imwrite(writePath, result)
-    addToDB(writePath, 'edege', user_id)
+    addToDB(writePath, 'edge', user_id)
 
 def solveEulerLagrange(foreImg, backImg, mask):
 
