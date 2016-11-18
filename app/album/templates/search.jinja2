@@ -1,6 +1,7 @@
-Search
-<form method="POST" action="/album/search">
-  {{ form.csrf_token }}
-  {{form.tag.label}}{{form.tag()}}
-  <input type="submit" value="Search Image" name="search">
-</form>
+{% extends "base.jinja2" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content%}
+<div class="col-xs-4 col-xs-offset-4 container">
+    {{ wtf.quick_form(form, action="/album/search")}}
+</dib>
+{% endblock %}

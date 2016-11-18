@@ -31,7 +31,7 @@ def blending():
                                             writeName,
                                             current_user.id).task_id
             return task_id
-    return render_template('blending.jinja2', form=form)
+    return render_template('effect.jinja2', form=form, effect='blending')
 
 @effect.route('/blur', methods=['GET', 'POST'])
 @login_required
@@ -50,7 +50,7 @@ def blur():
             task_id = gaussianBlur.delay(imgName, writeName, current_user.id).task_id
             return task_id
 
-    return render_template('blur.jinja2', form=form)
+    return render_template('effect.jinja2', form=form, effect='blur')
 
 @effect.route('/edge', methods=['GET', 'POST'])
 @login_required
@@ -69,7 +69,7 @@ def edge():
             task_id = laplacian.delay(imgName, writeName, current_user.id).task_id
 
             return task_id
-    return render_template('edge.jinja2', form=form)
+    return render_template('effect.jinja2', form=form, effect='edge')
 
 @effect.route('/hdr', methods=['GET', 'POST'])
 @login_required
@@ -104,7 +104,7 @@ def HDR():
             return task_id
 
 
-    return render_template('hdr.jinja2', form=form)
+    return render_template('effect.jinja2', form=form, effect='hdr')
 
 def uniqueName():
     return uuid4().hex + '.jpg'

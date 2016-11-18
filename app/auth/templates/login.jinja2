@@ -1,25 +1,7 @@
-{% macro render_field(field, placeholder=None) %}
-{% if field.errors %}
-<div>
-{% elif field.flags.error %}
-<div>
-{% else %}
-<div>
-{% endif %}
-    {% set css_class = 'form-control ' + kwargs.pop('class', '') %}
-    {{ field(class=css_class, placeholder=placeholder, **kwargs) }}
-</div>
-{% endmacro %}
-Login
-<form method="POST" action="/auth/login" accept-charset="UTF-8" role="form">
-  {{ form.csrf_token }}
-  {{ render_field(form.username, placeholder="Username", autofocus="") }}
-  {{ render_field(form.password, placeholder="Password") }}
-  <div>
-  <label>
-    <input type="checkbox" name="remember" value="1"> Remember Me
-  </label>
-  <a role="button" href="">Forgot your password?</a><span class="clearfix"></span>
-  </div>
-  <button type="submit" name="submit">Sign in</button>
-</form>
+{% extends "base.jinja2" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content%}
+<div class="col-xs-4 col-xs-offset-4 container">
+    {{ wtf.quick_form(form, action="/auth/login")}}
+</dib>
+{% endblock %}

@@ -1,8 +1,0 @@
-Blending
-<form method="POST" action="/effect/blending" enctype="multipart/form-data">
-  {{ form.csrf_token }}
-  {{form.foreImg.label}}{{form.foreImg()}}
-  {{form.backImg.label}}{{form.backImg()}}
-  {{form.mask.label}}{{form.mask()}}
-  <input type="submit" value="Blending Image" name="submit">
-</form>

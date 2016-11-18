@@ -32,7 +32,7 @@ def poissonBlending(foreImgName, backImgName, maskName, writeName, user_id):
     cv2.imwrite(writePath, result)
 
     photo_id = addToDB(writeName, 'blending', user_id)
-    createTumbnail.delay(writeName, photo_id)
+    createTumbnail(writeName, photo_id)
 
     autoTag.delay(writePath, photo_id)
 
@@ -51,7 +51,7 @@ def gaussianBlur(imgName, writeName, user_id):
     cv2.imwrite(writePath, result)
 
     photo_id = addToDB(writeName, 'blur', user_id)
-    createTumbnail.delay(writeName, photo_id)
+    createTumbnail(writeName, photo_id)
 
     autoTag.delay(writePath, photo_id)
 
@@ -68,7 +68,7 @@ def laplacian(imgName, writeName, user_id):
     cv2.imwrite(writePath, result)
 
     photo_id = addToDB(writeName, 'edge', user_id)
-    createTumbnail.delay(writeName, photo_id)
+    createTumbnail(writeName, photo_id)
 
     autoTag.delay(writePath, photo_id)
 
@@ -93,7 +93,7 @@ def hdr(imgNames, exposures, writeName, user_id):
 
     cv2.imwrite(writePath, res * 255)
     photo_id = addToDB(writeName, 'HDR', user_id)
-    createTumbnail.delay(writeName, photo_id)
+    createTumbnail(writeName, photo_id)
 
     autoTag.delay(writePath, photo_id)
 
@@ -141,7 +141,6 @@ def createTumbnail(imgName, photo_id):
         W = 128
 
     tn = cv2.resize(img, (W, H))
-
     cv2.imwrite(tnPath, tn)
 
     with app.app_context():
