@@ -133,12 +133,8 @@ def createTumbnail(imgName, photo_id):
 
     H, W, _ = img.shape
 
-    if H > W:
-        W = int(float(W) / H * 128)
-        H = 128
-    else:
-        H = int(float(H) / W * 128)
-        W = 128
+    W = int(float(W) / H * 200)
+    H = 200
 
     tn = cv2.resize(img, (W, H))
     cv2.imwrite(tnPath, tn)

@@ -6,7 +6,12 @@ import jinja2
 app = Flask(__name__)
 
 #
+
+
+
 Bootstrap(app)
+
+# print(app.extensions['bootstrap']['cdns']['bootstrap'])
 
 my_loader = jinja2.ChoiceLoader([
     app.jinja_loader,

@@ -1,18 +1,45 @@
 {% extends "base.jinja2" %}
+{% block head %}
+{{super()}}
+<script>
+  $.getScript('//cdn.jsdelivr.net/isotope/1.5.25/jquery.isotope.min.js',function(){
+    $('#projects_container').isotope({
+      itemSelector : '.thumbnail',
+      layoutMode : 'fitRows'
+    });
+  });
+</script>
+<style>
+
+.thumbnail{
+    height: 250px;
+    max-width: 300px;
+    margin: 2px;
+}
+
+.btn-xs {
+    margin: 1px;
+}
+
+</style>
+{% endblock%}
 {% block content %}
-<ul>
-{% for photo in photos %}
-<li>
-    <span>
-        <a href={{photo.url}}>
-            <img src="{{photo.tn_url}}"/>
-        </a>
-    </span>
-    <span style="display:inline-block; width: 10px;"></span>
-    {% for tag in photo.tags %}
-        {{tag.attr}}
-    {% endfor %}
-</li>
-{% endfor %}
-</ul>
+<div id='projects_container'>
+<div class="row">
+  {% for photo in photos %}
+  <div class="thumbnail">
+    <a href="{{photo.url}}">
+      <img src="{{photo.tn_url}}">
+    </a>
+    <div class="caption">
+        {% for tag in photo.tags %}
+        <span class="btn btn-primary btn-xs">
+            {{tag.attr}}
+        </span>
+        {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+</div>
 {% endblock %}
