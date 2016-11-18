@@ -1,26 +1,7 @@
 {% extends "base.jinja2" %}
 {% block head %}
 {{super()}}
-<script>
 
-$(document).ready(function(e) {
-    $(".thumbnail").on('mouseenter', function(){
-        $(this).find(".del_btn").show();
-    }).on('mouseleave', function() {
-        $(this).find(".del_btn").hide();
-    });
- });
-
-    // .mouseout(function() {
-    //  $('.thumbnail').find('.del_btn').hide();
-    // });
-    $.getScript('//cdn.jsdelivr.net/isotope/1.5.25/jquery.isotope.min.js',function(){
-      $('#projects_container').isotope({
-        itemSelector : '.thumbnail',
-        layoutMode : 'fitRows'
-      });
-    });
-</script>
 <style>
 
 .thumbnail{
@@ -34,32 +15,74 @@ $(document).ready(function(e) {
 
 .del_btn {
     display: none;
-    position: fixed;
+    position: absolute;;
     padding: 0px;
+}
+
+.tn {
+    max-height: 300px;
 }
 
 </style>
 {% endblock%}
+
 {% block content %}
 <div id='projects_container'>
-<div class="row">
-  {% for photo in photos %}
-  <div class="thumbnail">
-    <button class='btn btn-danger btn_xs del_btn'>
-        <span class='glyphicon glyphicon-remove'></span>
-    </button>
-    <a href="{{photo.url}}">
-      <img src="{{photo.tn_url}}">
-    </a>
-    <div class="caption">
-        {% for tag in photo.tags %}
-        <span class="btn btn-primary btn-xs tag">
-            {{tag.attr}}
-        </span>
-        {% endfor %}
+    <div class="row">
+      {% for photo in photos %}
+      <div class="thumbnail">
+        <button class='btn btn-danger btn_xs del_btn' id='{{photo.id}}'>
+            <span class='glyphicon glyphicon-remove'></span>
+        </button>
+        <a href="{{photo.url}}">
+          <img src="{{photo.tn_url}}" class="tn" />
+        </a>
+        <div class="caption">
+            {% for tag in photo.tags %}
+            <span class="btn btn-primary btn-xs tag">
+                {{tag.attr}}
+            </span>
+            {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
     </div>
-  </div>
-  {% endfor %}
 </div>
-</div>
+
+{% endblock %}
+
+{% block scripts%}
+{{super()}}
+<script>
+$(document).ready(function(e) {
+
+    var $container = $('#projects_container').isotope({
+      itemSelector : '.thumbnail',
+      layoutMode : 'fitRows'
+    });
+
+    $(".thumbnail").on('mouseenter', function(){
+        $(this).find(".del_btn").show();
+    }).on('mouseleave', function() {
+        $(this).find(".del_btn").hide();
+    });
+
+    $('.del_btn').click(function() {
+
+        var photo_id = $(this).attr('id');
+
+        $.ajax({
+          type: "POST",
+          url: "/album/delete",
+          data: {photo_id: photo_id},
+          success: function(data) {
+              $('#' + photo_id).parent().remove();
+              $container.isotope('layout');
+          }
+        });
+
+  });
+
+ });
+</script>
 {% endblock %}

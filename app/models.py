@@ -22,6 +22,7 @@ class Photo(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String(255), nullable=False)
     tn_url = db.Column(db.String(255), nullable=False)
+    filename = db.Column(db.String(255))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User')
     tags = db.relationship('Tag', cascade='all, delete, delete-orphan')

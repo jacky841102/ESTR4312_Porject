@@ -22,24 +22,11 @@
    ``super()`` is used: #}
 {% block head %}
 {{super()}}
-<script
-  src="https://code.jquery.com/jquery-3.1.1.min.js"
-  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-  crossorigin="anonymous"></script>
 {{fixes.ie8()}}
 {% endblock %}
 
-{# Adding our own CSS files is also done here. Check the documentation at
-   http://pythonhosted.org/Flask-Bootstrap/basic-usage.html#available-blocks
-   for an overview. #}
-{% block styles %}
-    {{super()}}  {# do not forget to call super or Bootstrap's own stylesheets
-                    will disappear! #}
-    <link rel="stylesheet" type="text/css"
-          href="{{url_for('static', filename='sample-app.css')}}">
-{% endblock %}
-
 {% block body %}
+
 <nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -92,5 +79,11 @@
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
+
 {{super()}}
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script src="https://unpkg.com/isotope-layout@3.0/dist/isotope.pkgd.js"></script>
 {% endblock %}

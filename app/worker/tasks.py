@@ -197,7 +197,7 @@ def addToDB(writeName, attr, user_id):
     with app.app_context():
         url = url_for('album.uploaded_file', filename=writeName)
         user = User.query.get(user_id)
-        photo = Photo(url=url, tn_url=url)
+        photo = Photo(url=url, tn_url=url, filename=writeName)
         user.album.append(photo)
         photo.tags.append(Tag(attr=attr))
         db.session.commit()

@@ -30,7 +30,7 @@ def upload():
 
                 with app.app_context():
                     url = url_for('album.uploaded_file', filename=filename, _external=True)
-                    photo = Photo(url=url, tn_url=url)
+                    photo = Photo(url=url, tn_url=url, filename=filename)
 
                     for tag in form.tags.data.split():
                         photo.tags.append(Tag(attr=tag))
@@ -52,15 +52,13 @@ def uploaded_file(filename):
 @album.route('/delete', methods=['GET', 'POST'])
 @login_required
 def delete():
-    form = DeleteForm()
+    photo_id = request.form['photo_id']
     if request.method == 'POST':
-        if form.validate_on_submit():
-            photo_id = int(form.photo_id.data)
-            photo = Photo.query.get(photo_id)
-            db.session.delete(photo)
-            db.session.commit()
-            return 'delete succesfully'
-    return render_template('delete.jinja2', form=form)
+        photo = Photo.query.get(photo_id)
+        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], photo.filename))
+        db.session.delete(photo)
+        db.session.commit()
+        return "deleted"
 
 @album.route('/search', methods=['GET', 'POST'])
 @login_required
