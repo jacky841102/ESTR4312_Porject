@@ -63,13 +63,12 @@ def delete():
 @album.route('/search', methods=['GET', 'POST'])
 @login_required
 def search():
-    form = SearchForm()
+    tag = request.form['tag']
     if request.method == 'POST':
-        if form.validate_on_submit():
-            attr = form.tag.data
-            photos = []
-            if attr:
-                for tag in Tag.query.filter_by(attr=attr).all():
-                    photos.append(tag.photo)
-            return render_template('list.jinja2', photos=photos)
-    return render_template('search.jinja2', form=form)
+        attr = tag.strip()
+        photos = []
+        print(attr)
+        if attr:
+            for tag in Tag.query.filter_by(attr=attr).all():
+                photos.append(tag.photo)
+        return render_template('list.jinja2', photos=photos)

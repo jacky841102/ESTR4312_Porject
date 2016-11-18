@@ -80,9 +80,21 @@ $(document).ready(function(e) {
               $container.isotope('layout');
           }
         });
+    })
 
-  });
-
+    $('.tag').click(function() {
+        var tag = $(this).text();
+        $.ajax({
+          type: "POST",
+          url: "/album/search",
+          data: {tag: tag},
+          success: function(res) {
+              var w = window.open('about:blank', 'windowname');
+            w.document.write(res);
+            w.document.close();
+          }
+        });
+      });
  });
 </script>
 {% endblock %}
