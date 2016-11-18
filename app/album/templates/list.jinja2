@@ -2,23 +2,40 @@
 {% block head %}
 {{super()}}
 <script>
-  $.getScript('//cdn.jsdelivr.net/isotope/1.5.25/jquery.isotope.min.js',function(){
-    $('#projects_container').isotope({
-      itemSelector : '.thumbnail',
-      layoutMode : 'fitRows'
+
+$(document).ready(function(e) {
+    $(".thumbnail").on('mouseenter', function(){
+        $(this).find(".del_btn").show();
+    }).on('mouseleave', function() {
+        $(this).find(".del_btn").hide();
     });
-  });
+ });
+
+    // .mouseout(function() {
+    //  $('.thumbnail').find('.del_btn').hide();
+    // });
+    $.getScript('//cdn.jsdelivr.net/isotope/1.5.25/jquery.isotope.min.js',function(){
+      $('#projects_container').isotope({
+        itemSelector : '.thumbnail',
+        layoutMode : 'fitRows'
+      });
+    });
 </script>
 <style>
 
 .thumbnail{
-    height: 250px;
     max-width: 300px;
     margin: 2px;
 }
 
-.btn-xs {
+.tag {
     margin: 1px;
+}
+
+.del_btn {
+    display: none;
+    position: fixed;
+    padding: 0px;
 }
 
 </style>
@@ -28,12 +45,15 @@
 <div class="row">
   {% for photo in photos %}
   <div class="thumbnail">
+    <button class='btn btn-danger btn_xs del_btn'>
+        <span class='glyphicon glyphicon-remove'></span>
+    </button>
     <a href="{{photo.url}}">
       <img src="{{photo.tn_url}}">
     </a>
     <div class="caption">
         {% for tag in photo.tags %}
-        <span class="btn btn-primary btn-xs">
+        <span class="btn btn-primary btn-xs tag">
             {{tag.attr}}
         </span>
         {% endfor %}
