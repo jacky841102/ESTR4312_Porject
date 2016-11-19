@@ -13,7 +13,7 @@ import os
 @login_required
 def myalbum():
     user = User.query.get(current_user.id)
-    return render_template('list.jinja2', photos=user.album)
+    return render_template('list.jinja2', photos=sorted(user.album, key=lambda x: x.submit_at, reverse=True))
 
 @album.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -73,6 +73,6 @@ def search():
         if attr:
             for tag in Tag.query.filter_by(attr=attr).all():
                 photos.append(tag.photo)
-            u = render_template('list.jinja2', photos=photos)
+            u = render_template('list.jinja2', photos=sorted(photos, key=lambda x: x.submit_at, reverse=True))
             return u
         # return u

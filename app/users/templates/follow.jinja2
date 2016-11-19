@@ -1,0 +1,49 @@
+{% extends "base.jinja2" %}
+{% block content %}
+<div class="col-xs-4 col-xs-offset-4 container">
+    <ul class='list-group'>
+        {% for user in all_users %}
+            <li class='list-group-item'>
+                <span>{{user.username}}</span>
+                {% if user.id in followed%}
+                <button class='btn btn-warning btn-xs pull-right follow' id='{{user.id}}'>
+                unfollow
+                {% else %}
+                <button class='btn btn-primary btn-xs pull-right follow' id={{user.id}}>
+                follow
+                {% endif%}
+                </button>
+            </li>
+        {% endfor%}
+    <ul>
+<div>
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script>
+// $(document).ready(function(){
+    $('.follow').click(function() {
+
+        var followed_id = $(this).attr('id');
+        $.ajax({
+          type: "POST",
+          url: "/users/",
+          data: {followed_id: followed_id},
+          success: function(data) {
+              var $btn = $('#' + followed_id)
+              if($btn.text().trim() === "follow"){
+                  $btn.removeClass('btn-primary');
+                  $btn.addClass('btn-warning');
+                  $btn.text('unfollow');
+              }else {
+                  $btn.removeClass('btn-warning');
+                  $btn.addClass('btn-primary');
+                  $btn.text('follow');
+              }
+          }.bind(this)
+        });
+    });
+// });
+</script>
+{% endblock %}

@@ -32,13 +32,13 @@ db = SQLAlchemy(app)
 from .auth import auth, login_manager
 from .album import album
 from .effect import effect
-from .follow import follow
+from .users import users
 from .models import User, Following
 
 app.register_blueprint(auth)
 app.register_blueprint(album)
 app.register_blueprint(effect)
-app.register_blueprint(follow)
+app.register_blueprint(users)
 
 
 login_manager.init_app(app)
@@ -60,4 +60,4 @@ def posts():
         followed = User.query.get(followed_id)
         for photo in followed.album:
             photos.append(photo)
-    return render_template('list.jinja2', photos=photos)
+    return render_template('list.jinja2', photos=sorted(photos, key=lambda x: x.submit_at, reverse=True))
