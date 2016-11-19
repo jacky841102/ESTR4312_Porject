@@ -114,10 +114,12 @@ def autoTag(imgPath, photo_id):
 
     photo = Photo.query.get(photo_id)
 
+    tagged = set(tag.attr for tag in photo.tags)
+
     tags = results[0]['tags']
 
     for tag in tags:
-        if float(tag['confidence']) >= 25:
+        if float(tag['confidence']) >= 25 and tag['tag'] not in tagged:
             photo.tags.append(Tag(attr=tag['tag']))
 
     db.session.commit()

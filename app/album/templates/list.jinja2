@@ -5,7 +5,7 @@
 <style>
 
 .thumbnail{
-    max-width: 300px;
+    width: 200px;
     margin: 2px;
 }
 
@@ -20,7 +20,8 @@
 }
 
 .tn {
-    max-height: 300px;
+    /*max-height: 300px;*/
+    width: auto;
 }
 
 </style>
@@ -59,6 +60,7 @@ $(document).ready(function(e) {
     var $container = $('#projects_container').isotope({
       itemSelector : '.thumbnail',
       layoutMode : 'fitRows'
+    //   layoutMode : 'masonry'
     });
 
     $(".thumbnail").on('mouseenter', function(){
@@ -89,7 +91,7 @@ $(document).ready(function(e) {
           url: "/album/search",
           data: {tag: tag},
           success: function(res) {
-              var w = window.open('about:blank', 'windowname');
+            var w = window.open('about:blank', 'windowname');
             w.document.write(res);
             w.document.close();
           }

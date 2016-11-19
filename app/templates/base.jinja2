@@ -25,6 +25,11 @@
 {{fixes.ie8()}}
 {% endblock %}
 
+{% block styles%}
+{{super()}}
+<link href="{{ url_for('static', filename='css/mab-jquery-taginput.css') }}" type="text/css" media="all" rel="stylesheet"/>
+{% endblock %}
+
 {% block body %}
 
 <nav class="navbar navbar-default">
@@ -86,4 +91,6 @@
 {% block scripts %}
 {{super()}}
 <script src="https://unpkg.com/isotope-layout@3.0/dist/isotope.pkgd.js"></script>
+<script src="{{ url_for('static', filename='js/typeahead.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/mab-jquery-taginput.js') }}"></script>
 {% endblock %}

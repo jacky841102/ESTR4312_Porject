@@ -1,5 +1,4 @@
-from flask import render_template, Blueprint, request, redirect
-from flask_sqlalchemy import SQLAlchemy
+from flask import render_template, request, redirect
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from werkzeug.security import generate_password_hash, \
      check_password_hash

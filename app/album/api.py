@@ -11,7 +11,7 @@ import os
 
 @album.route('/')
 @login_required
-def list():
+def myalbum():
     user = User.query.get(current_user.id)
     return render_template('list.jinja2', photos=user.album)
 
@@ -20,6 +20,7 @@ def list():
 def upload():
     user = User.query.get(current_user.id)
     form = UploadForm()
+    attrs = list(set(tag.attr for tag in Tag.query.all()))
     if request.method == 'POST':
         if form.validate_on_submit():
             file = form.photo.data
@@ -32,8 +33,9 @@ def upload():
                     url = url_for('album.uploaded_file', filename=filename, _external=True)
                     photo = Photo(url=url, tn_url=url, filename=filename)
 
-                    for tag in form.tags.data.split():
-                        photo.tags.append(Tag(attr=tag))
+                    for tag in form.tags.data.split('|'):
+                        if tag:
+                            photo.tags.append(Tag(attr=tag))
 
                     user.album.append(photo)
                     db.session.commit()
@@ -42,7 +44,7 @@ def upload():
                     autoTag.delay(imgPath, photo.id)
 
                     return redirect(url)
-    return render_template('upload.jinja2', form=form)
+    return render_template('upload.jinja2', form=form, attrs=attrs)
 
 @album.route('/<filename>')
 def uploaded_file(filename):
@@ -56,6 +58,7 @@ def delete():
     if request.method == 'POST':
         photo = Photo.query.get(photo_id)
         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], photo.filename))
+        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], 'tn-' + photo.filename))
         db.session.delete(photo)
         db.session.commit()
         return "deleted"
@@ -67,8 +70,9 @@ def search():
     if request.method == 'POST':
         attr = tag.strip()
         photos = []
-        print(attr)
         if attr:
             for tag in Tag.query.filter_by(attr=attr).all():
                 photos.append(tag.photo)
-        return render_template('list.jinja2', photos=photos)
+            u = render_template('list.jinja2', photos=photos)
+            return u
+        # return u
