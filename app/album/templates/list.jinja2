@@ -28,13 +28,15 @@
 {% endblock%}
 
 {% block content %}
-<div id='projects_container'>
+<div id='projects_container' class='ol-xs-12 col-sm-12 col-md-8 col-md-offset-2 container '>
     <div class="row">
       {% for photo in photos %}
       <div class="thumbnail">
+        {% if personal %}
         <button class='btn btn-danger btn_xs del_btn' id='{{photo.id}}'>
             <span class='glyphicon glyphicon-remove'></span>
         </button>
+        {% endif %}
         <a href="{{photo.url}}">
           <img src="{{photo.tn_url}}" class="tn" />
         </a>

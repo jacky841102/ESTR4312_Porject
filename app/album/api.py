@@ -13,7 +13,7 @@ import os
 @login_required
 def myalbum():
     user = User.query.get(current_user.id)
-    return render_template('list.jinja2', photos=sorted(user.album, key=lambda x: x.submit_at, reverse=True))
+    return render_template('list.jinja2', photos=sorted(user.album, key=lambda x: x.submit_at, reverse=True),  personal=True)
 
 @album.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -66,8 +66,14 @@ def delete():
 @album.route('/search', methods=['GET', 'POST'])
 @login_required
 def search():
-    tag = request.form['tag']
+    form = SearchForm()
     if request.method == 'POST':
+        #from click on tag
+        if 'tag' in request.form:
+            tag = request.form['tag']
+        #from search page
+        else:
+            tag = form.tags.data
         attr = tag.strip()
         photos = []
         if attr:
@@ -75,4 +81,5 @@ def search():
                 photos.append(tag.photo)
             u = render_template('list.jinja2', photos=sorted(photos, key=lambda x: x.submit_at, reverse=True))
             return u
-        # return u
+    attrs = list(set(tag.attr for tag in Tag.query.all()))
+    return render_template('search.jinja2', form=form, attrs=attrs)

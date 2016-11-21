@@ -15,7 +15,7 @@ class UploadForm(FlaskForm):
     submit = SubmitField('Upload')
 
 class SearchForm(FlaskForm):
-    tag = StringField(u'Tag')
+    tags = StringField(u'Tags')
     submit = SubmitField('Search')
 
 class DeleteForm(FlaskForm):
