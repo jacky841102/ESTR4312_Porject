@@ -1,4 +1,4 @@
-# ESTR4312_Porject
+# ESTR4312_Project
 ## Topic
 personal album
 ## Features
