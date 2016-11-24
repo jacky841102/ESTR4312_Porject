@@ -4,7 +4,7 @@ import scipy
 from scipy.sparse import linalg
 from celery import Celery
 from io import BytesIO
-from app import db, app
+from app import db, app, create_app
 from app.models import User, Photo, Tag
 from flask import url_for
 import requests
@@ -23,9 +23,11 @@ def make_celery(app):
     celery.Task = ContextTask
     return celery
 
-# app.config['SERVER_NAME'] = '54.191.115.198'
+app = create_app()
+app.config['SERVER_NAME'] = '54.191.115.198'
 # app.config['SERVER_NAME'] = 'localhost:5000'
 worker = make_celery(app)
+worker.conf.update(app.config)
 
 api_key = 'acc_bcaa852bcf36aeb'
 api_secret = '26070208e4010423b321281902c5dd4f'
@@ -155,7 +157,8 @@ def createThumbnail(imgName, photo_id):
     cv2.imwrite(tnPath, tn)
 
     with app.app_context():
-        url = url_for('album.uploaded_file', filename=tnName, _external=True)
+        # url = url_for('album.uploaded_file', filename=tnName, _external=True)
+        url = 'http://' + app.config['SERVER_NAME'] + '/album/' + tnName
         photo = Photo.query.get(photo_id)
         photo.tn_url = url
         db.session.commit()
@@ -210,7 +213,8 @@ def solveEulerLagrange(foreImg, backImg, mask):
 
 def addToDB(writeName, attr, user_id):
     with app.app_context():
-        url = url_for('album.uploaded_file', filename=writeName, _external=True)
+        # url = url_for('album.uploaded_file', filename=writeName, _external=True)
+        url = 'http://' + app.config['SERVER_NAME'] + '/album/' + tnName
         user = User.query.get(user_id)
         photo = Photo(url=url, tn_url=url, filename=writeName)
         user.album.append(photo)

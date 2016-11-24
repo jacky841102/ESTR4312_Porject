@@ -53,7 +53,7 @@ app.register_blueprint(effect)
 app.register_blueprint(users)
 login_manager.init_app(app)
 
-app.config['SERVER_NAME'] = 'localhost:5000'
+# app.config['SERVER_NAME'] = 'localhost:5000'
 
 db.create_all()
 
