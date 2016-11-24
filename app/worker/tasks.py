@@ -10,9 +10,22 @@ from flask import url_for
 import requests
 import os
 
-worker = Celery('tasks',
-              broker='amqp://guest@localhost//',
-              backend='redis://localhost')
+def make_celery(app):
+    celery = Celery(app.import_name, backend=app.config['CELERY_BACKEND'],
+                    broker=app.config['CELERY_BROKER_URL'])
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+    class ContextTask(TaskBase):
+        abstract = True
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+    celery.Task = ContextTask
+    return celery
+
+# app.config['SERVER_NAME'] = '54.191.115.198'
+# app.config['SERVER_NAME'] = 'localhost:5000'
+worker = make_celery(app)
 
 api_key = 'acc_bcaa852bcf36aeb'
 api_secret = '26070208e4010423b321281902c5dd4f'
@@ -32,7 +45,7 @@ def poissonBlending(foreImgName, backImgName, maskName, writeName, user_id):
     cv2.imwrite(writePath, result)
 
     photo_id = addToDB(writeName, 'blending', user_id)
-    createTumbnail(writeName, photo_id)
+    createThumbnail(writeName, photo_id)
 
     autoTag.delay(writePath, photo_id)
 
@@ -51,7 +64,7 @@ def gaussianBlur(imgName, writeName, user_id):
     cv2.imwrite(writePath, result)
 
     photo_id = addToDB(writeName, 'blur', user_id)
-    createTumbnail(writeName, photo_id)
+    createThumbnail(writeName, photo_id)
 
     autoTag.delay(writePath, photo_id)
 
@@ -68,7 +81,7 @@ def laplacian(imgName, writeName, user_id):
     cv2.imwrite(writePath, result)
 
     photo_id = addToDB(writeName, 'edge', user_id)
-    createTumbnail(writeName, photo_id)
+    createThumbnail(writeName, photo_id)
 
     autoTag.delay(writePath, photo_id)
 
@@ -93,7 +106,7 @@ def hdr(imgNames, exposures, writeName, user_id):
 
     cv2.imwrite(writePath, res * 255)
     photo_id = addToDB(writeName, 'HDR', user_id)
-    createTumbnail(writeName, photo_id)
+    createThumbnail(writeName, photo_id)
 
     autoTag.delay(writePath, photo_id)
 
@@ -125,7 +138,7 @@ def autoTag(imgPath, photo_id):
     db.session.commit()
 
 @worker.task
-def createTumbnail(imgName, photo_id):
+def createThumbnail(imgName, photo_id):
     tnName = 'tn-' + imgName
 
     imgPath = os.path.join(app.config['UPLOAD_FOLDER'], imgName)
@@ -142,7 +155,7 @@ def createTumbnail(imgName, photo_id):
     cv2.imwrite(tnPath, tn)
 
     with app.app_context():
-        url = url_for('album.uploaded_file', filename=tnName)
+        url = url_for('album.uploaded_file', filename=tnName, _external=True)
         photo = Photo.query.get(photo_id)
         photo.tn_url = url
         db.session.commit()
@@ -197,7 +210,7 @@ def solveEulerLagrange(foreImg, backImg, mask):
 
 def addToDB(writeName, attr, user_id):
     with app.app_context():
-        url = url_for('album.uploaded_file', filename=writeName)
+        url = url_for('album.uploaded_file', filename=writeName, _external=True)
         user = User.query.get(user_id)
         photo = Photo(url=url, tn_url=url, filename=writeName)
         user.album.append(photo)

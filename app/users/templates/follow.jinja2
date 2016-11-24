@@ -1,4 +1,8 @@
 {% extends "base.jinja2" %}
+{% block head %}
+{{super()}}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+{% endblock %}
 {% block content %}
 <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4 container">
     <ul class='list-group'>
@@ -22,28 +26,37 @@
 {% block scripts %}
 {{super()}}
 <script>
-// $(document).ready(function(){
-    $('.follow').click(function() {
+var csrftoken = $('meta[name=csrf-token]').attr('content')
 
-        var followed_id = $(this).attr('id');
-        $.ajax({
-          type: "POST",
-          url: "/users/",
-          data: {followed_id: followed_id},
-          success: function(data) {
-              var $btn = $('#' + followed_id)
-              if($btn.text().trim() === "follow"){
-                  $btn.removeClass('btn-primary');
-                  $btn.addClass('btn-warning');
-                  $btn.text('unfollow');
-              }else {
-                  $btn.removeClass('btn-warning');
-                  $btn.addClass('btn-primary');
-                  $btn.text('follow');
-              }
-          }.bind(this)
-        });
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken)
+        }
+    }
+})
+
+$('.follow').click(function() {
+
+    var followed_id = $(this).attr('id');
+    $.ajax({
+      type: "POST",
+      url: "/users/",
+      data: {followed_id: followed_id},
+      success: function(data) {
+          var $btn = $('#' + followed_id)
+          if($btn.text().trim() === "follow"){
+              $btn.removeClass('btn-primary');
+              $btn.addClass('btn-warning');
+              $btn.text('unfollow');
+          }else {
+              $btn.removeClass('btn-warning');
+              $btn.addClass('btn-primary');
+              $btn.text('follow');
+          }
+      }.bind(this)
     });
-// });
+});
+
 </script>
 {% endblock %}

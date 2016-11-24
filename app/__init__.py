@@ -2,30 +2,41 @@ from flask import Flask, render_template, send_from_directory
 from flask_login import login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
+from flask_wtf.csrf import CsrfProtect
 import jinja2
 
-app = Flask(__name__)
+def create_app():
+    app = Flask(__name__)
 
-Bootstrap(app)
+    Bootstrap(app)
 
-my_loader = jinja2.ChoiceLoader([
-    app.jinja_loader,
-    jinja2.FileSystemLoader('./effect/templates'),
-    jinja2.FileSystemLoader('./auth/templates'),
-    jinja2.FileSystemLoader('./album/templates')
-])
+    my_loader = jinja2.ChoiceLoader([
+        app.jinja_loader,
+        jinja2.FileSystemLoader('./effect/templates'),
+        jinja2.FileSystemLoader('./auth/templates'),
+        jinja2.FileSystemLoader('./album/templates')
+    ])
 
-app.jinja_loader = my_loader
+    app.jinja_loader = my_loader
 
-app.config['BOOTSTRAP_SERVE_LOCAL'] = False
+    app.config['BOOTSTRAP_SERVE_LOCAL'] = False
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@localhost/ierg4080'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-app.secret_key = 'super secret key'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@localhost/ierg4080'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+    app.secret_key = 'super secret key'
 
-app.config['SERVER_NAME'] = 'localhost:8080'
-app.config['UPLOAD_FOLDER'] = '/tmp/images'
-app.config['ALLOWED_EXTENSIONS'] = set(['png', 'jpg', 'jpeg'])
+    app.config.update(
+        CELERY_BROKER_URL='amqp://guest@localhost//',
+        CELERY_RESULT_BACKEND='redis://localhost',
+        CELERY_BACKEND='redis://localhost'
+    )
+
+    CsrfProtect(app)
+    app.config['UPLOAD_FOLDER'] = '/tmp/images'
+    app.config['ALLOWED_EXTENSIONS'] = set(['png', 'jpg', 'jpeg'])
+    return app
+
+app = create_app()
 
 db = SQLAlchemy(app)
 
@@ -34,14 +45,15 @@ from .album import album
 from .effect import effect
 from .users import users
 from .models import User, Following
+from .worker import worker
 
 app.register_blueprint(auth)
 app.register_blueprint(album)
 app.register_blueprint(effect)
 app.register_blueprint(users)
-
-
 login_manager.init_app(app)
+
+app.config['SERVER_NAME'] = 'localhost:5000'
 
 db.create_all()
 

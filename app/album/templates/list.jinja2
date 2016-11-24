@@ -1,7 +1,12 @@
 {% extends "base.jinja2" %}
+
 {% block head %}
 {{super()}}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+{% endblock %}
 
+{% block styles %}
+{{super()}}
 <style>
 
 .thumbnail{
@@ -21,11 +26,12 @@
 
 .tn {
     /*max-height: 300px;*/
+    /*max-width: 250px;*/
     width: auto;
 }
 
 </style>
-{% endblock%}
+{% endblock %}
 
 {% block content %}
 <div id='projects_container' class='ol-xs-12 col-sm-12 col-md-8 col-md-offset-2 container '>
@@ -57,6 +63,17 @@
 {% block scripts%}
 {{super()}}
 <script>
+
+var csrftoken = $('meta[name=csrf-token]').attr('content')
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken)
+        }
+    }
+})
+
 $(document).ready(function(e) {
 
     var $container = $('#projects_container').isotope({

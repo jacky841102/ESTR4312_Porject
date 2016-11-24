@@ -5,7 +5,7 @@ from app import db, app
 from . import album
 from werkzeug.utils import secure_filename
 from .form import UploadForm, SearchForm, DeleteForm
-from app.worker import autoTag, createTumbnail
+from app.worker import autoTag, createThumbnail
 from uuid import uuid4
 import os
 
@@ -40,7 +40,7 @@ def upload():
                     user.album.append(photo)
                     db.session.commit()
 
-                    createTumbnail.delay(filename, photo.id)
+                    createThumbnail.delay(filename, photo.id)
                     autoTag.delay(imgPath, photo.id)
 
                     return redirect(url)
