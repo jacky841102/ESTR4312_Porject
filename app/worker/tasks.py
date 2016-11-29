@@ -95,8 +95,8 @@ def hdr(imgNames, exposures, writeName, user_id):
 
     imgPaths = [os.path.join(app.config['UPLOAD_FOLDER'], imgName) for imgName in imgNames]
 
-    images = [cv2.imread(imgPath) for imgPath in imgPaths]
-    imgs = imageAlignment(images)
+    imgs= [cv2.imread(imgPath) for imgPath in imgPaths]
+#    imgs = imageAlignment(images)
 
     merge_debvec = cv2.createMergeDebevec()
 
@@ -214,7 +214,7 @@ def solveEulerLagrange(foreImg, backImg, mask):
 def addToDB(writeName, attr, user_id):
     with app.app_context():
         # url = url_for('album.uploaded_file', filename=writeName, _external=True)
-        url = 'http://' + app.config['SERVER_NAME'] + '/album/' + tnName
+        url = 'http://' + app.config['SERVER_NAME'] + '/album/' + writeName
         user = User.query.get(user_id)
         photo = Photo(url=url, tn_url=url, filename=writeName)
         user.album.append(photo)
