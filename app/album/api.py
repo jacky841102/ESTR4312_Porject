@@ -7,13 +7,18 @@ from werkzeug.utils import secure_filename
 from .form import UploadForm, SearchForm, DeleteForm
 from app.worker import autoTag, createThumbnail
 from uuid import uuid4
-import os
+import os, redis
 
 @album.route('/')
 @login_required
 def myalbum():
+    r = redis.StrictRedis(host=app.config['CACHE'], port=6379, db=1)
+    cache = r.get(current_user.id)
+    if cache:
+        return cache
     user = User.query.get(current_user.id)
-    return render_template('list.jinja2', photos=sorted(user.album, key=lambda x: x.submit_at, reverse=True),  personal=True)
+    r.set(current_user.id, render_template('list.jinja2', photos=sorted(user.album, key=lambda x: x.submit_at, reverse=True),  personal=True))
+    returnr.get(current_user.id)
 
 @album.route('/upload', methods=['GET', 'POST'])
 @login_required

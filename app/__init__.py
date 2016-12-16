@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, redirect
 from flask_login import login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
@@ -23,6 +23,9 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@localhost/ierg4080'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+
+    app.config['CACHE'] = 'redis://localhost'
+
     app.secret_key = 'super secret key'
 
     app.config.update(
