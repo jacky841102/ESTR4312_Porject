@@ -12,13 +12,13 @@ import os, redis
 @album.route('/')
 @login_required
 def myalbum():
-    r = redis.StrictRedis(host=app.config['CACHE'], port=6379, db=1)
+    r = redis.StrictRedis(host='localhost', port=6379, db=0)
     cache = r.get(current_user.id)
     if cache:
         return cache
     user = User.query.get(current_user.id)
     r.set(current_user.id, render_template('list.jinja2', photos=sorted(user.album, key=lambda x: x.submit_at, reverse=True),  personal=True))
-    returnr.get(current_user.id)
+    return r.get(current_user.id)
 
 @album.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -48,6 +48,12 @@ def upload():
                     createThumbnail.delay(filename, photo.id)
                     autoTag.delay(imgPath, photo.id)
 
+                    r = redis.StrictRedis(host='localhost', port=6379, db=0)
+                    try:
+                        r.delete(current_user.id)
+                    except e:
+                        pass
+
                     return redirect(url)
     return render_template('upload.jinja2', form=form, attrs=attrs)
 
@@ -66,6 +72,11 @@ def delete():
         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], 'tn-' + photo.filename))
         db.session.delete(photo)
         db.session.commit()
+        r = redis.StrictRedis(host='localhost', port=6379, db=0)
+        try:
+            r.delete(current_user.id)
+        except e:
+            pass
         return "deleted"
 
 @album.route('/search', methods=['GET', 'POST'])
