@@ -29,8 +29,8 @@ app.config['SERVER_NAME'] = '54.191.115.198'
 worker = make_celery(app)
 worker.conf.update(app.config)
 
-api_key = 'acc_bcaa852bcf36aeb'
-api_secret = '26070208e4010423b321281902c5dd4f'
+api_key = 'acc_7f63850315b5cd4'
+api_secret = '4b260bb4f1219d4c4b860ae120f563b7'
 
 @worker.task
 def poissonBlending(foreImgName, backImgName, maskName, writeName, user_id):

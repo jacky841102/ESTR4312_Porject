@@ -63,8 +63,9 @@ def send_lib(path):
     return send_from_directory('static', path)
 
 @app.route('/')
-@login_required
 def posts():
+    if not current_user.is_authenticated:
+        return redirect('auth/login')
     user = User.query.get(current_user.id)
     photos = list(user.album)
     for following in user.followings:
